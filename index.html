@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily Sales Incentives</title>
+  <style>
+    body { font-family: sans-serif; padding: 1rem; max-width: 600px; margin: auto; }
+    h1 { text-align: center; }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background-color: #f9f9f9;
+    }
+    .inactive { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Today's Sales Incentives</h1>
+  <div id="incentives">Loading...</div>
+
+  <script>
+    const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTp5YmxqzgUvWtSqew1GcK__M1hETOrJFNuYOn-tCgMxkGf_D5GC4sKROmi0eEpgsQPpcl3lHe1DRQl/pub?output=csv';
+
+    function parseCSV(csv) {
+      const [header, ...rows] = csv.trim().split('\n').map(r => r.split(','));
+      return rows.map(row => {
+        const obj = {};
+        header.forEach((key, i) => obj[key.trim()] = row[i].trim());
+        return obj;
+      });
+    }
+
+    function isActive(start, end) {
+      const today = new Date();
+      const s = new Date(start);
+      const e = new Date(end);
+      return s <= today && e >= today;
+    }
+
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(csv => {
+        const data = parseCSV(csv);
+        const container = document.getElementById('incentives');
+        container.innerHTML = '';
+        const todayIncentives = data.filter(row => isActive(row['Start Date'], row['End Date']));
+
+        if (todayIncentives.length === 0) {
+          container.innerHTML = '<p>No active incentives today.</p>';
+          return;
+        }
+
+        todayIncentives.forEach(row => {
+          const div = document.createElement('div');
+          div.className = 'card';
+          div.innerHTML = `<h2>${row['Incentive Name']}</h2><p>${row['Description']}</p>`;
+          container.appendChild(div);
+        });
+      });
+  </script>
+</body>
+</html>
