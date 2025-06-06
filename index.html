@@ -14,6 +14,11 @@
       margin-bottom: 1rem;
       background-color: #f9f9f9;
     }
+    .card img {
+      max-width: 100%;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
     .inactive { display: none; }
   </style>
 </head>
@@ -28,7 +33,7 @@
       const [header, ...rows] = csv.trim().split('\n').map(r => r.split(','));
       return rows.map(row => {
         const obj = {};
-        header.forEach((key, i) => obj[key.trim()] = row[i].trim());
+        header.forEach((key, i) => obj[key.trim()] = row[i]?.trim() || '');
         return obj;
       });
     }
@@ -56,7 +61,11 @@
         todayIncentives.forEach(row => {
           const div = document.createElement('div');
           div.className = 'card';
-          div.innerHTML = `<h2>${row['Incentive Name']}</h2><p>${row['Description']}</p>`;
+          div.innerHTML = `
+            ${row['Image URL'] ? `<img src="${row['Image URL']}" alt="Incentive Image">` : ''}
+            <h2>${row['Incentive Name']}</h2>
+            <p>${row['Description']}</p>
+          `;
           container.appendChild(div);
         });
       });
